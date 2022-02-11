@@ -32,16 +32,11 @@ def get_wav_info(wav_file):
 if not os.path.exists(os.path.join(OUTPUT_DIR, "audio-images")):
     os.mkdir(os.path.join(OUTPUT_DIR, "audio-images"))
 
-count_class_samples = {f"class_{i}": 0 for i in range(10)}
-
 for filename in os.listdir(INPUT_DIR):
     if "wav" in filename:
         file_path = os.path.join(INPUT_DIR, filename)
         file_stem = Path(file_path).stem
         target_dir = f"class_{file_stem[0]}"
-        if count_class_samples[target_dir] >= 5:
-            continue
-        count_class_samples[target_dir] += 1
         dist_dir = os.path.join(os.path.join(OUTPUT_DIR, "audio-images"), target_dir)
         file_dist_path = os.path.join(dist_dir, file_stem)
         if not os.path.exists(file_dist_path + ".png"):
