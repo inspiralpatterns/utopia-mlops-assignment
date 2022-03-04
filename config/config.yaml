@@ -1,0 +1,21 @@
+experiment_name: "utopia-mlops-exp-1"
+dataset_structure:
+  working_dir: "working"
+  dataset_dir: "dataset"
+  n_classes: 10
+processor:
+  input_dir: "/Users/mpa/projects/utopia-mlops-assignment/recordings"
+  sample_rate: 8000
+  keep_duration: 0.7
+model:
+  n_classes: 10
+  n_layers: 3
+  conv_layer_specs:
+    filters: 32
+    kernel_size: 3
+    padding: "same"
+    activation: "relu"
+  training:
+    epochs: 10
+    validation_split: 0.2
+    batch_size: 8
