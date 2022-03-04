@@ -3,7 +3,7 @@ from pathlib import Path
 import pytest
 from yaml.scanner import ScannerError
 
-from io_utils import set_dataset_dir, list_subdir, list_files, load_config
+from src.utils.io_utils import set_dataset_dir, list_subdir, list_files, load_config
 
 
 def test_set_dataset_dir():

@@ -3,8 +3,8 @@ from pathlib import Path
 from typing import Iterator, Optional, Union
 
 from extractor import Extractor
-from io_utils import path_stem, load_audio, save_to_npy
-from utils import pad
+from src.utils.io_utils import path_stem, load_audio, save_to_npy
+from src.utils.utils import pad
 
 
 class Processor(ABC):

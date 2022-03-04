@@ -2,7 +2,7 @@ import pytest
 
 import extractor
 import normalizer
-from utils import config_to_cls
+from src.utils.utils import config_to_cls
 
 
 def test_config_to_cls_extractor():

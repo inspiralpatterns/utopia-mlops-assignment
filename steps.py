@@ -7,7 +7,7 @@ import tensorflow as tf
 
 from dataset import MNISTAudioDataset
 from extractor import MelSpectrogramExtractor
-from io_utils import AudioFileLoader, list_subdir, list_files
+from src.utils.io_utils import AudioFileLoader, list_subdir, list_files
 from model import CNNModel, InputShape, ConvLayer
 from preprocessing import AudioProcessor
 
