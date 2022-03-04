@@ -3,7 +3,7 @@ import argparse
 import mlflow
 
 from src.utils.io_utils import load_config
-from steps import dataset_dir_structure, process_audio, create_mnist_audio_dataset, build_mnist_audio_model, \
+from src.pipeline.steps import dataset_dir_structure, process_audio, create_mnist_audio_dataset, build_mnist_audio_model, \
     split_dataset, train_and_evaluate
 
 
