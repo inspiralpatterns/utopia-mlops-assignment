@@ -19,3 +19,4 @@ model:
     epochs: 15
     validation_split: 0.3
     batch_size: 16
+  output_dir: "/Users/mpa/projects/utopia-mlops-assignment/model"
