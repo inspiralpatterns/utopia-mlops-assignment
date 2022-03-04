@@ -5,11 +5,11 @@ from typing import Iterator, Tuple
 
 import tensorflow as tf
 
-from dataset import MNISTAudioDataset
-from extractor import MelSpectrogramExtractor
+from src.pipeline.classes.dataset import MNISTAudioDataset
+from src.pipeline.classes.extractor import MelSpectrogramExtractor
 from src.utils.io_utils import AudioFileLoader, list_subdir, list_files
-from model import CNNModel, InputShape, ConvLayer
-from preprocessing import AudioProcessor
+from src.pipeline.classes.model import CNNModel, InputShape, ConvLayer
+from src.pipeline.classes.preprocessing import AudioProcessor
 
 
 def dataset_dir_structure(cfg: dict) -> Path:
