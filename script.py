@@ -3,8 +3,9 @@ import argparse
 import mlflow
 
 from src.utils.io_utils import load_config
-from src.pipeline.steps import dataset_dir_structure, process_audio, create_mnist_audio_dataset, build_mnist_audio_model, \
-    split_dataset, train_and_evaluate
+from src.pipeline.steps import dataset_dir_structure, process_audio, create_mnist_audio_dataset, \
+    build_mnist_audio_model, \
+    split_dataset, train_and_evaluate, save
 
 
 # Main flow
@@ -24,12 +25,13 @@ def main(cfgs: dict):
         # Create and compile model
         mnist_model = build_mnist_audio_model(cfgs.get("model"))
         # Train and evaluate
-        _, evaluation = train_and_evaluate(
+        mnist_trained_model, evaluation = train_and_evaluate(
             model=mnist_model,
             train_dataset=training_dataset,
             validation_dataset=validation_dataset,
             train_cfg=cfgs.get("model").get("training")
         )
+        save(mnist_trained_model, cfgs.get("model").get("output_dir"))
 
 
 if __name__ == '__main__':

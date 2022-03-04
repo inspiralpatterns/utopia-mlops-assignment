@@ -1,7 +1,7 @@
 import itertools
 from collections import deque
 from pathlib import Path
-from typing import Iterator, Tuple
+from typing import Iterator, Tuple, Union
 
 import tensorflow as tf
 
@@ -113,3 +113,7 @@ def train_and_evaluate(
     print(evaluation)
 
     return model, evaluation
+
+
+def save(model: tf.keras.Model, out_path: Union[Path, str]):
+    model.save(out_path)
