@@ -85,6 +85,8 @@ ubuntu@ml-mattia-patern-wattmsam:~/utopia-mlops-assignment$ cat mlruns/1/6229793
 * two logs file with format `experiment-name.log` where Python stdout is piped in. This gives information such as
 model summary, training and evaluation stats per epoch and IO specs.
 
+> You can find the DAG definition for Airflow inside `/home/ubuntu/airflow/dags/ml_pipeline.py`
+
 ## Discussion
 
 The pipeline structure and the code are yet to be a fully, production-ready application due to different factors.
