@@ -84,13 +84,20 @@ techniques shown in [SpecAugment](https://www.tensorflow.org/io/tutorials/audio#
 idea was to pick a framework and try to stick with it for the most part, thus the idea of leaning towards `tfio.audio`. 
 Nevertheless, I still believe that `librosa` provides an easy and safe framework for all audio things.
 
-Finally, I have not been able to rid the code of all hard-coded stuff and ad-hoc implementation e.g.
+Finally, I have not been able to rid the code of all hard-coded stuff and ad-hoc implementation e.g. in random and 
+non-exhaustive order:
 
 * when [shuffling the dataset](https://github.com/inspiralpatterns/utopia-mlops-assignment/blob/e1be99eed4c568a4f857daab414a8ea0b8d3120c/script.py#L22) the code 
 still depends on the hard-coded size of the full dataset;
 * the [input shape](https://github.com/inspiralpatterns/utopia-mlops-assignment/blob/e1be99eed4c568a4f857daab414a8ea0b8d3120c/src/pipeline/steps.py#L73) for the model 
 is coupled to the shape of each processed audio file, that the model will fail is e.g. the audio file duration changes.
-* most of the IO functions rely on the use of `Path`, and generators of them. 
+* most of the IO functions rely on the use of `Path`, and generators of them;
+* there should be a more general definition of _dataset_;
+* there could be a more general `Model` interface, from which `CNNModel` could inherit;
+* tests are missing for all classes so that input and output are validated;
+* error handling is not in place, that is, there are no custom exception thrown by the classes in case of failure 
+and no process to cope with such failure (such as `Either` types);
+* docstrings are missing for all classes.
 
 Ideally, we would like to impute such dynamic values as input shape, dataset size etc. during the preprocessing task 
 and store them as metadata so that they could be used in downstream steps. 
@@ -100,6 +107,8 @@ loading_ is a good approach, there should be an alternative
 e.g. such functions could take either a path, or a string or a list of them, and the function could handle each case accordingly.
 
 ### Observation on MLOps tools
+
+#### Mlflow
 
 `mlflow` is being use for experiment tracking, as it is quite easy to set up and to include inside the pipeline. 
 However, a couple of thoughts on its use:
@@ -112,3 +121,69 @@ I haven't investigated on whether there could be a general folder, and where to 
 config file for the general Mlflow settings). Nevertheless, if the experiments are not saved inside such a folder, 
 as in the case of the Airflow execution, nothing would show up when running `mlflow ui`. (See below for Airflow.)
 
+#### Airflow
+
+As said above, the idea underlying the functions in `steps.py` is to have a function _per task_. That is,
+they can all be combined inside a DAG: thus, the choice of Airflow. Moreover, I would expect that not all
+pipelines require e.g. to set up the folder structure for the dataset. With that said, my initial idea was to:
+
+* build an Airflow `DAG` for the pipeline;
+* have optional tasks as described above;
+* pass on the output of one task as input for the next one, as in the case of setting `InputShape` for the model;
+* have the `mlflow` experiment run from within airflow.
+
+However, there were some troubles that did not let me successfully get to the desired outcome. Furthermore, I had 
+some doubts in how to organise the code and what strategy to pursue. I will give a few examples for both below.
+
+> The examples refer to experiments with my local Airflow setup for convenience - I could access the UI.
+
+Initially, I thought of invoking the Python script as a test that everything was working properly in the Airflow 
+scheduler. 
+To do so, I used the Airflow `BashOperator` which allows to execute a Shell command. I used `BashOperator` because I wanted to keep the scripts outside of the local `dags` 
+folder, and using `PythonOperator` to run the python callable would result in some ad-hoc `sys.append()`, which I 
+didn't want the DAG script to pollute with. However, this failed at first because of 
+required Python dependencies. There can be several possible solutions, which I haven't fully explored:
+
+* using `PythonVirtualenvOperator` to set up a `venv` for each task given a list of requirements;
+* using `DockerOperator` to self-contain the task in its Docker image;
+* packaging the pipeline and use it as dependency;
+* move the code inside the `dags` folder so to avoid appending paths for the interpreter;
+* installing the required dependencies in the target system.
+
+Eventually, I went for the last option as it is the easiest and the dependencies are few. However, I do **not** 
+believe this could be any good for a production setup and I think that using Docker images together with some image 
+repository could be favourable in order to keep the system tidy.
+
+Moving on, I realised that it is not that easy to have data transit between tasks. Airflow documentation suggests to 
+use XCom for short messages and remote storage for bigger data, such as S3. That means I would have to change the 
+way the functions in `script.py`, i.e. the tasks, fetch or read the parameters they need.
+
+Lastly, I did try to run the dag from within Airflow. Although the execution was successful, I could not see any 
+result when checking for the experiment run. As I found out from logging some of the `Path().resolve()` code, 
+Airflow has its own internal setup where temporary files and/or folder can be created and/or accessed. As an example,
+the absolute path of one of the logging was `/private/var/...`, which did not reflect the idea that I was having, 
+namely the absolute path would be the one where the DAG script lives. This had some unexpected consequences:
+
+* I could no longer use dynamic path resolution for the YAML config file, nor the recordings folder as the 
+* resolution would be wrong when running the code from within Airflow;
+* All paths should be static, i.e. dataset path, model folder path etc. That is, the code should be changed to 
+* reflect this and to properly fetch and load data in its right place;
+* I could not find the automatically generated `mlruns` folder and therefore access the experiment run logs.
+
+### Conclusion
+
+The MLOps setup I had in mind consisted of:
+
+* **Mlflow** for experiment tracking and logging;
+* **Airflow** for pipeline orchestration and scheduling.
+
+The scheduler would run the pipeline as a number of tasks defined inside the codebase. Since the codebase makes use 
+of `mlflow` as its dependency, the pipeline is assigned an experiment name and a run ID. The experiment can then be 
+accessed from MLflow UI.
+
+However, because of Airflow's own way of running scheduled jobs, the logs about the experiment and the Mlflow 
+autogenerated `mlruns` folder that contains them cannot be found at the expected location. Therefore, it is not 
+possible to inspect experiment logs, nor the model artefact with the current setup.
+
+Nevertheless, the pipeline can be run manually using `script.py` and providing a YAML config file. Doing so, the 
+experiment tracking logs can be found in project folder.
