@@ -54,13 +54,36 @@ pip install -r requirements.txt
 python script.py --config <your-config-file>
 ```
 
-To load the model, you can run the following snippet inside the PyCharm Python Console:
+To load the model, you can run the following snippet inside the REPL:
 ```python
 import tensorflow as tf
 
 model_folder = "model"
 model = tf.keras.models.load_model(model_folder)
 ```
+
+## Server run
+You will find the same code under `/home/ubuntu/utopia-mlops-assignment`. There, you will have:
+
+* `mlruns` folder -where experiment logs are stored. Each run has its own `uuid` and subfolder with e.g. params, 
+metrics etc. As an example, to inspect accuracy for experiment 1
+```shell
+ubuntu@ml-mattia-patern-wattmsam:~/utopia-mlops-assignment$ cat mlruns/1/622979359eed417fb83ff3be279c4ed5/metrics/accuracy
+1646494486641 0.20000000298023224 0
+1646494486881 0.3499999940395355 1
+1646494487026 0.5 2
+1646494487121 0.699999988079071 3
+1646494487263 0.7749999761581421 4
+1646494487408 0.699999988079071 5
+1646494487550 0.8500000238418579 6
+1646494487695 0.8500000238418579 7
+1646494487836 0.8999999761581421 8
+1646494487982 0.9750000238418579 9
+```
+
+* `model` folder - where trained models are saved (see above for how to load the model);
+* two logs file with format `experiment-name.log` where Python stdout is piped in. This gives information such as
+model summary, training and evaluation stats per epoch and IO specs.
 
 ## Discussion
 
